@@ -16,17 +16,13 @@ def png_pack(png_tag: bytes, data: bytes) -> bytes:
     return pack("!I", len(data)) + chunk_head + pack("!I", 0xFFFFFFFF & crc32(chunk_head))
 
 
-def rgba_png(buffer: iter, width: int, height: int) -> bytes:
+def make_rgba_png(buffer: iter, width: int, height: int) -> bytes:
     width_byte_4 = width * 4
-    raw_data = bytearray()
-    for y in range(height):
-        raw_data.extend(b'\x00')
-        raw_data.extend(buffer[y * width_byte_4:(y + 1) * width_byte_4])
-
+    raw_data = [b'\x00' + bytes(buffer[y * width_byte_4:(y + 1) * width_byte_4]) for y in range(height)]
     return b"".join([
         b'\x89PNG\r\n\x1a\n',
         png_pack(b'IHDR', pack("!2I5B", width, height, 8, 6, 0, 0, 0)),
-        png_pack(b'IDAT', compress(bytes(raw_data), 9)),
+        png_pack(b'IDAT', compress(b''.join(raw_data), 9)),
         png_pack(b'IEND', b'')])
 
 
@@ -37,7 +33,7 @@ matrix = make_grid(*size)
 matrix[1][1] = True
 matrix[0][0] = True
 
-int_list = list(chain.from_iterable(list_of_bool_to_rgba(chain.from_iterable(matrix))))
+int_list = tuple(chain.from_iterable(list_of_bool_to_rgba(chain.from_iterable(matrix))))
 
 with open('a.png', 'wb') as fp:
-    fp.write(rgba_png(int_list, size[0], size[1]))
+    fp.write(make_rgba_png(int_list, size[0], size[1]))
