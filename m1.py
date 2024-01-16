@@ -8,7 +8,7 @@ def make_grid(x_size: int, y_size: int) -> list[list[bool]]:
 
 
 def list_of_bool_to_rgba(list_of_bool: list[bool]) -> iter:
-    return ([0, 0, 0, 255] if x else [255, 255, 255, 255] for x in list_of_bool)
+    return (b'\x00\x00\x00\xff' if x else b'\xff\xff\xff\xff' for x in list_of_bool)
 
 
 def png_pack(png_tag: bytes, data: bytes) -> bytes:
